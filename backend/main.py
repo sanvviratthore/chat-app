@@ -230,7 +230,8 @@ async def websocket_endpoint(ws: WebSocket, room: str, username: str):
             save_message(room, unique_username, text, timestamp)
 
             # Broadcast to everyone including sender
-            await manager.broadcast(room, msg)
+            # Broadcast to others, send once to sender
+            await manager.broadcast(room, msg, exclude=unique_username)
             await manager.send_to(ws, msg)
 
     except WebSocketDisconnect:
