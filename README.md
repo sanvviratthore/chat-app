@@ -4,7 +4,7 @@ A real-time group chat app built with FastAPI WebSockets and vanilla JS.
 
 ## Live Demo
 
-> Paste your deployed URL here
+https://chat-app-2-th9p.onrender.com/
 
 ---
 
