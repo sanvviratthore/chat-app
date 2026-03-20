@@ -242,5 +242,6 @@ async def websocket_endpoint(ws: WebSocket, room: str, username: str):
             "text": f"{unique_username} left the room",
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-        await manager.broadcast(room, leave_msg)
-        await manager.broadcast_users(room)
+        # Broadcast to everyone except sender, then send once to sender
+    await manager.broadcast(room, msg, exclude=unique_username)
+    await manager.send_to(ws, msg)
