@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chatly</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e0e0e; --surface: #161616; --surface-2: #1e1e1e;
+      --border: #2a2a2a; --text: #f0ede8; --muted: #7a7672;
+      --accent: #e8d44d; --danger: #e85d5d; --success: #5de8a0;
+      --system: #4ECDC4;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      display: flex; flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      background: var(--surface); flex-shrink: 0;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; }
+    .logo span { color: var(--accent); }
+    .room-name {
+      font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.95rem;
+      color: var(--text); background: var(--surface-2);
+      border: 1px solid var(--border); border-radius: 8px; padding: 4px 12px;
+    }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--success); display: inline-block; margin-right: 6px;
+    }
+    .status-dot.offline { background: var(--danger); }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .leave-btn {
+      background: none; border: 1px solid var(--border); border-radius: 8px;
+      color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.8rem;
+      padding: 6px 12px; cursor: pointer; transition: all 0.15s;
+    }
+    .leave-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+    /* Layout */
+    .layout { display: flex; flex: 1; overflow: hidden; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 200px; border-right: 1px solid var(--border);
+      background: var(--surface); display: flex; flex-direction: column;
+      flex-shrink: 0;
+    }
+    .sidebar-title {
+      font-family: 'Syne', sans-serif; font-size: 0.7rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+      padding: 16px 16px 8px;
+    }
+    .user-list { flex: 1; overflow-y: auto; padding: 0 8px 16px; }
+    .user-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 8px; border-radius: 8px; font-size: 0.85rem; color: var(--text);
+    }
+    .user-item.me { color: var(--accent); font-weight: 600; }
+    .user-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; flex-shrink: 0;
+    }
+
+    /* Chat area */
+    .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .messages {
+      flex: 1; overflow-y: auto; padding: 16px;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .messages::-webkit-scrollbar { width: 4px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* Message types */
+    .msg { display: flex; flex-direction: column; padding: 4px 0; }
+    .msg-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; }
+    .msg-username { font-weight: 600; font-size: 0.88rem; }
+    .msg-username.me { color: var(--accent); }
+    .msg-time { font-size: 0.72rem; color: var(--muted); }
+    .msg-text { font-size: 0.9rem; line-height: 1.5; color: var(--text); word-break: break-word; padding-left: 2px; }
+    .msg-system {
+      text-align: center; font-size: 0.78rem; color: var(--system);
+      padding: 6px 0; font-style: italic;
+    }
+    .msg-error {
+      text-align: center; font-size: 0.78rem; color: var(--danger);
+      padding: 4px 0;
+    }
+
+    /* Group consecutive messages */
+    .msg.grouped .msg-header { display: none; }
+    .msg.grouped .msg-text { padding-left: 2px; }
+
+    /* Input area */
+    .input-area {
+      padding: 12px 16px; border-top: 1px solid var(--border);
+      display: flex; gap: 10px; background: var(--surface); flex-shrink: 0;
+    }
+    #msg-input {
+      flex: 1; background: var(--surface-2); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 11px 14px; font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem; color: var(--text); outline: none;
+      transition: border-color 0.15s; resize: none;
+    }
+    #msg-input:focus { border-color: var(--accent); }
+    #msg-input::placeholder { color: var(--muted); }
+    .send-btn {
+      background: var(--accent); color: #0e0e0e; border: none;
+      border-radius: 10px; width: 44px; font-size: 1.2rem;
+      cursor: pointer; transition: background 0.15s; flex-shrink: 0;
+    }
+    .send-btn:hover { background: #c9b835; }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .char-count { font-size: 0.72rem; color: var(--muted); align-self: flex-end; padding-bottom: 12px; }
+    .char-count.warn { color: var(--danger); }
+
+    /* Reconnecting banner */
+    #reconnect-banner {
+      background: rgba(232,93,93,0.1); border-bottom: 1px solid var(--danger);
+      color: var(--danger); font-size: 0.82rem; text-align: center;
+      padding: 8px; display: none;
+    }
+
+    @media (max-width: 600px) {
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="reconnect-banner">⚠ Connection lost. Reconnecting…</div>
+
+<header>
+  <div class="header-left">
+    <div class="logo">✦ <span>Chatly</span></div>
+    <div class="room-name" id="room-display">#general</div>
+  </div>
+  <div class="header-right">
+    <span><span class="status-dot" id="status-dot"></span><span id="status-text" style="font-size:0.8rem;color:var(--muted)">Connecting…</span></span>
+    <button class="leave-btn" onclick="leaveRoom()">Leave</button>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- Online users sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-title">Online — <span id="user-count">0</span></div>
+    <div class="user-list" id="user-list"></div>
+  </div>
+
+  <!-- Chat -->
+  <div class="chat-area">
+    <div class="messages" id="messages"></div>
+    <div class="input-area">
+      <textarea
+        id="msg-input"
+        placeholder="Message #general…"
+        maxlength="200"
+        rows="1"
+        disabled
+      ></textarea>
+      <span class="char-count" id="char-count">200</span>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>➤</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Params ──────────────────────────────────────────────────────────────────
+  const params   = new URLSearchParams(window.location.search);
+  const room     = params.get('room') || 'general';
+  const username = params.get('username') || 'anonymous';
+
+  if (!params.get('room') || !params.get('username')) {
+    window.location.href = '/';
+  }
+
+  document.getElementById('room-display').textContent = `#${room}`;
+  document.getElementById('msg-input').placeholder = `Message #${room}…`;
+  document.title = `#${room} — Chatly`;
+
+  // ── Avatar colors ───────────────────────────────────────────────────────────
+  const COLORS = ['#FF6B6B','#4ECDC4','#45B7D1','#96CEB4','#FFEAA7','#DDA0DD','#98D8C8','#e8d44d'];
+  function colorFor(name) {
+    let h = 0;
+    for (let c of name) h = (h * 31 + c.charCodeAt(0)) % COLORS.length;
+    return COLORS[h];
+  }
+  function initials(name) {
+    return name.slice(0, 2).toUpperCase();
+  }
+
+  // ── XSS prevention ──────────────────────────────────────────────────────────
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function formatTime(iso) {
+    try {
+      return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch { return ''; }
+  }
+
+  // ── Render messages ─────────────────────────────────────────────────────────
+  const messagesEl = document.getElementById('messages');
+  let lastUsername = null;
+
+  function appendMessage(msg) {
+    const el = document.createElement('div');
+
+    if (msg.type === 'system') {
+      el.className = 'msg-system';
+      el.textContent = msg.text;
+      lastUsername = null;
+    } else if (msg.type === 'error') {
+      el.className = 'msg-error';
+      el.textContent = msg.text;
+    } else if (msg.type === 'message') {
+      const isMe = msg.username === username;
+      const grouped = msg.username === lastUsername;
+      el.className = `msg${grouped ? ' grouped' : ''}`;
+
+      if (!grouped) {
+        const header = document.createElement('div');
+        header.className = 'msg-header';
+        header.innerHTML = `
+          <span class="msg-username${isMe ? ' me' : ''}">${escHtml(msg.username)}</span>
+          <span class="msg-time">${formatTime(msg.timestamp)}</span>
+        `;
+        el.appendChild(header);
+      }
+
+      const text = document.createElement('div');
+      text.className = 'msg-text';
+      text.textContent = msg.text; // textContent = XSS safe
+      el.appendChild(text);
+
+      lastUsername = msg.username;
+    }
+
+    messagesEl.appendChild(el);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  // ── User list ────────────────────────────────────────────────────────────────
+  function renderUsers(users) {
+    document.getElementById('user-count').textContent = users.length;
+    const list = document.getElementById('user-list');
+    list.innerHTML = '';
+    users.forEach(u => {
+      const el = document.createElement('div');
+      el.className = `user-item${u === username ? ' me' : ''}`;
+      const color = colorFor(u);
+      el.innerHTML = `
+        <div class="user-avatar" style="background:${color}22;color:${color}">${initials(u)}</div>
+        <span>${escHtml(u)}${u === username ? ' (you)' : ''}</span>
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  // ── WebSocket ────────────────────────────────────────────────────────────────
+  let ws = null;
+  let reconnectDelay = 1000;
+  let reconnectTimer = null;
+  let connected = false;
+
+  function setStatus(online) {
+    connected = online;
+    const dot  = document.getElementById('status-dot');
+    const text = document.getElementById('status-text');
+    const input = document.getElementById('msg-input');
+    const btn   = document.getElementById('send-btn');
+    const banner = document.getElementById('reconnect-banner');
+
+    dot.className   = `status-dot${online ? '' : ' offline'}`;
+    text.textContent = online ? 'Connected' : 'Disconnected';
+    input.disabled  = !online;
+    btn.disabled    = !online;
+    banner.style.display = online ? 'none' : 'block';
+  }
+
+  function connect() {
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    const wsUrl = `${proto}://${location.host}/ws/${room}/${encodeURIComponent(username)}`;
+
+    ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      setStatus(true);
+      reconnectDelay = 1000;
+    };
+
+    ws.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'users') {
+          renderUsers(msg.users);
+        } else {
+          appendMessage(msg);
+        }
+      } catch {}
+    };
+
+    ws.onclose = () => {
+      setStatus(false);
+      // Exponential backoff reconnect
+      reconnectTimer = setTimeout(() => connect(), reconnectDelay);
+      reconnectDelay = Math.min(reconnectDelay * 2, 16000);
+    };
+
+    ws.onerror = () => {
+      ws.close();
+    };
+  }
+
+  // ── Send message ─────────────────────────────────────────────────────────────
+  function sendMessage() {
+    const input = document.getElementById('msg-input');
+    const text  = input.value.trim();
+    if (!text || !connected) return;
+    if (text.length > 200) return;
+
+    ws.send(JSON.stringify({ type: 'message', text }));
+    input.value = '';
+    document.getElementById('char-count').textContent = '200';
+    input.focus();
+  }
+
+  // ── Input events ─────────────────────────────────────────────────────────────
+  document.getElementById('msg-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  document.getElementById('msg-input').addEventListener('input', (e) => {
+    const remaining = 200 - e.target.value.length;
+    const counter = document.getElementById('char-count');
+    counter.textContent = remaining;
+    counter.className = `char-count${remaining < 20 ? ' warn' : ''}`;
+  });
+
+  function leaveRoom() {
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+    if (ws) ws.close();
+    window.location.href = '/';
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────────
+  connect();
+</script>
+</body>
+</html>

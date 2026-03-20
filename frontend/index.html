@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chatly — Join</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e0e0e; --surface: #161616; --border: #2a2a2a;
+      --text: #f0ede8; --muted: #7a7672; --accent: #e8d44d;
+      --danger: #e85d5d;
+    }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 2rem; letter-spacing: -0.04em; margin-bottom: 8px;
+    }
+    .logo span { color: var(--accent); }
+    .tagline { color: var(--muted); font-size: 0.9rem; margin-bottom: 40px; }
+    .card {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 16px; padding: 36px; width: 100%; max-width: 420px;
+    }
+    label {
+      display: block; font-family: 'Syne', sans-serif; font-size: 0.75rem;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--muted); margin-bottom: 8px;
+    }
+    input, select {
+      width: 100%; background: #111; border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 13px 14px; font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem; color: var(--text); outline: none;
+      transition: border-color 0.15s; margin-bottom: 20px;
+      appearance: none;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+    .btn {
+      width: 100%; padding: 14px; background: var(--accent); color: #0e0e0e;
+      border: none; border-radius: 10px; font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 0.9rem; text-transform: uppercase;
+      letter-spacing: 0.05em; cursor: pointer; transition: background 0.15s;
+    }
+    .btn:hover { background: #c9b835; }
+    .error { color: var(--danger); font-size: 0.82rem; margin-top: 10px; min-height: 18px; }
+    .rooms-hint { color: var(--muted); font-size: 0.8rem; margin-top: 16px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="logo">✦ <span>Chatly</span></div>
+  <p class="tagline">Real-time group chat, no sign-up needed.</p>
+
+  <div class="card">
+    <div style="margin-bottom: 20px">
+      <label for="username">Your Name</label>
+      <input id="username" type="text" placeholder="e.g. sanvi" maxlength="32" autocomplete="off"/>
+    </div>
+    <div>
+      <label for="room">Choose a Room</label>
+      <select id="room">
+        <option value="general"># general — General discussion</option>
+        <option value="tech"># tech — Tech talk</option>
+        <option value="random"># random — Off-topic fun</option>
+      </select>
+    </div>
+    <div id="error" class="error"></div>
+    <button class="btn" onclick="joinRoom()">Join Room →</button>
+    <p class="rooms-hint">No account needed. Just pick a name and jump in.</p>
+  </div>
+
+  <script>
+    // Auto-fill from last session
+    const saved = localStorage.getItem('chatly_username');
+    if (saved) document.getElementById('username').value = saved;
+
+    function joinRoom() {
+      const username = document.getElementById('username').value.trim();
+      const room = document.getElementById('room').value;
+      const errorEl = document.getElementById('error');
+
+      if (!username) {
+        errorEl.textContent = 'Please enter your name.';
+        return;
+      }
+      if (username.length < 2) {
+        errorEl.textContent = 'Name must be at least 2 characters.';
+        return;
+      }
+      if (!/^[a-zA-Z0-9_\- ]+$/.test(username)) {
+        errorEl.textContent = 'Name can only contain letters, numbers, spaces, _ and -.';
+        return;
+      }
+
+      localStorage.setItem('chatly_username', username);
+      localStorage.setItem('chatly_room', room);
+      window.location.href = `/chat?room=${encodeURIComponent(room)}&username=${encodeURIComponent(username)}`;
+    }
+
+    document.getElementById('username').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') joinRoom();
+    });
+  </script>
+</body>
+</html>
