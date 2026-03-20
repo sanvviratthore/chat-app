@@ -129,8 +129,6 @@ app.add_middleware(
 
 # Serve frontend
 frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend")
-if not os.path.exists(frontend_dir):
-    frontend_dir = os.path.join(os.path.dirname(__file__), "frontend")
 if os.path.exists(frontend_dir):
     app.mount("/static", StaticFiles(directory=frontend_dir), name="static")
 
@@ -242,6 +240,5 @@ async def websocket_endpoint(ws: WebSocket, room: str, username: str):
             "text": f"{unique_username} left the room",
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-        # Broadcast to everyone except sender, then send once to sender
-    await manager.broadcast(room, msg, exclude=unique_username)
-    await manager.send_to(ws, msg)
+        await manager.broadcast(room, leave_msg)
+        await manager.broadcast_users(room)
