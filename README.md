@@ -1,4 +1,4 @@
-# Chatly — Real-Time Group Chat
+# Chatly -> Real-Time Group Chat
 
 A real-time group chat app built with FastAPI WebSockets and vanilla JS.
 
@@ -16,8 +16,8 @@ https://chat-app-2-th9p.onrender.com/
 - Live online users list with presence
 - Auto-reconnect with exponential backoff
 - Username uniqueness per room
-- No sign-up needed — just pick a name and join
-- XSS-safe — all user content via `textContent`
+- No sign-up needed just pick a name and join
+- XSS-safe all user content via `textContent`
 
 ## Tech Stack
 
