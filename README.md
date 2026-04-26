@@ -52,7 +52,6 @@ chat-app/
 │   ├── index.html       # Join page
 │   └── chat.html        # Chat UI
 ├── SPEC.md              # Feature spec (written before building)
-├── POST_SHIP.md         # Post-ship reflection
 └── README.md
 ```
 
